@@ -29,54 +29,57 @@ func makeHTTPHandleFunc(f apiFunc) http.HandlerFunc {
 	}
 }
 
-type APIService struct {
+type APIServer struct {
 	listenAddr string
 }
 
-func NewAPIServer(listenAddr string) *APIService {
-	return &APIService{
+func NewAPIServer(listenAddr string) *APIServer {
+	return &APIServer{
 		listenAddr: listenAddr,
 	}
 }
 
-func (s *APIService) Run() {
+func (s *APIServer) Run() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/account", makeHTTPHandleFunc(s.handleAccount))
+	router.HandleFunc("/account/{id}", makeHTTPHandleFunc(s.handleGetAccount))
 
 	log.Println("JSON API server running on port: ", s.listenAddr)
 
 	http.ListenAndServe(s.listenAddr, router)
 }
 
-func (s *APIService) handleAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleAccount(w http.ResponseWriter, r *http.Request) error {
 	if r.Method == "GET" {
-		return s.handleAccount(w, r)
+		return s.handleGetAccount(w, r)
 	}
-
 	if r.Method == "POST" {
 		return s.handleCreateAccount(w, r)
 	}
-
 	if r.Method == "DELETE" {
 		return s.handleDeleteAccount(w, r)
 	}
 
-	return fmt.Errorf("method not allowd %s", r.Method)
+	return fmt.Errorf("method not allowed %s", r.Method)
 }
 
-func (s *APIService) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleGetAccount(w http.ResponseWriter, r *http.Request) error {
+	id := mux.Vars(r)["id"]
+
+	fmt.Println(id)
+
+	return WriteJSON(w, http.StatusOK, &Account{})
+}
+
+func (s *APIServer) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *APIService) handleCreateAccount(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
-func (s *APIService) handleDeleteAccount(w http.ResponseWriter, r *http.Request) error {
-	return nil
-}
-
-func (s *APIService) handleTransfer(w http.ResponseWriter, r *http.Request) error {
+func (s *APIServer) handleTransfer(w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
